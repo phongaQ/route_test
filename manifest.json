@@ -1,0 +1,6 @@
+{
+  "name": "route_test",
+  "short_name": "route_test",
+  "start_url": "/",
+  "display": "standalone"
+}

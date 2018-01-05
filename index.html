@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>route_test</title>
+    <meta name="description" content="route_test description">
+
+    <!-- See https://goo.gl/OOhYW5 -->
+    <link rel="manifest" href="/manifest.json">
+
+    <script src="/bower_components/webcomponentsjs/webcomponents-loader.js"></script>
+
+    <link rel="import" href="/src/route_test-app/route_test-app.html">
+    <link rel="import" href="/bower_components/app-route/app-route.html">
+    <link rel="import" href="/bower_components/app-route/app-location.html">
+    <link rel="import" href="/bower_components/iron-lazy-pages/iron-lazy-pages.html">
+  </head>
+  <body>
+    <my-router></my-router>
+    <!-- <route_test-app></route_test-app> -->
+    <dom-module id="my-router">
+      <template>
+        <app-location route="{{route}}"></app-location>
+        [[stringify(route)]]
+        [[stringify(data)]]
+        <a href="/">home</a>
+        <a href="/test">test</a>
+        <a href="/restricted">restricted</a>
+        <app-route
+          route="{{route}}"
+          pattern="/:view"
+          data="{{data}}">
+        </app-route>
+
+        <iron-lazy-pages selected="{{data.view}}" attr-for-selected="data-route">
+          <template is="dom-if" data-route="test" restamp>
+            <route_test-app></route_test-app>
+          </template>
+        </iron-lazy-pages>
+      </template>
+      <script>
+        class Router extends Polymer.Element {
+          constructor() {
+            super();
+
+            this._previousRoute = null;
+          }
+
+          static get is() {
+            return 'my-router';
+          }
+
+          static get properties() {
+            return {
+              route: {
+                type: Object,
+                observer: '_observeRoute'
+              },
+              data: Object
+            }
+          }
+
+          _observeRoute(route) {
+            console.log('routeChanged', route);
+            if (route.path.indexOf('restricted') >= 0) {
+              console.log(this._previousRoute);
+              const route = this._previousRoute || {path: '/'};
+              // window.history.replaceState({}, null, route.path);
+              window.history.back();
+              // window.history.pushState({}, null, route.path);
+              window.dispatchEvent(new CustomEvent('location-changed'));
+            }
+
+            this._previousRoute = route;
+          }
+
+          stringify(obj) {
+            return JSON.stringify(obj, null, 2);
+          }
+        }
+        window.customElements.define(Router.is, Router);
+      </script>
+    </dom-module>
+  </body>
+</html>
